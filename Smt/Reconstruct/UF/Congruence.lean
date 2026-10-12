@@ -103,6 +103,11 @@ def smtCongr (mv : MVarId) (hs : Array Expr) : MetaM Unit := mv.withContext do
     smtCongrArrow mv hs
   else if l.isAppOf ``ite then
     smtCongrIte mv l r hs
+  else if l.isAppOfArity ``Nat.cast 3 && l.appArg!.isAppOfArity ``BitVec.toNat 2 then
+    -- `ubv_to_int x` is reconstructed as `↑x.toNat`, an application of two functions.
+    let w : Q(Nat) ← pure l.appArg!.appFn!.appArg!
+    let f : Q(BitVec $w → Int) := q(fun x => (x.toNat : Int))
+    mv.assign (← Meta.mkCongrArg f hs[0]!)
   else if isLeftAssocOp l.getAppFn.constName then
     smtCongrLeftAssocOp mv l.appFn!.appFn! hs
   else if isRightAssocOp l.getAppFn.constName then

@@ -83,7 +83,8 @@ where
         | appT (symbolT "_") (symbolT sym@"zero_extend")
         | appT (symbolT "_") (symbolT sym@"sign_extend")
         | appT (symbolT "_") (symbolT sym@"rotate_left")
-        | appT (symbolT "_") (symbolT sym@"rotate_right") =>
+        | appT (symbolT "_") (symbolT sym@"rotate_right")
+        | appT (symbolT "_") (symbolT sym@"int_to_bv") =>
       let i := acc[0]!
       literalT (toString sexp!{(_ {sym} {i.toSexp})}) :: acc.drop 1
     -- Support the non-standard constant array constructor.

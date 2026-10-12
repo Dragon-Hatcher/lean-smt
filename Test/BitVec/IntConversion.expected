@@ -1,0 +1,10 @@
+goal: ↑x.toNat + x.toInt = i → BitVec.ofInt 8 i = x
+
+query:
+(set-logic ALL)
+(declare-const i Int)
+(declare-const x (_ BitVec 8))
+(assert (= (+ (ubv_to_int x) (sbv_to_int x)) i))
+(assert (not (= ((_ int_to_bv 8) i) x)))
+(check-sat)
+Test/BitVec/IntConversion.lean:5:8: warning: declaration uses `sorry`

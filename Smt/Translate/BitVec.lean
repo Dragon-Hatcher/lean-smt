@@ -117,6 +117,17 @@ private def reduceBitVecWidth? (e : Expr) : MetaM (Option Nat) := do
     let some _ ← reduceBitVecWidth? α | return none
     let some _ ← reduceBitVecWidth? β | return none
     return some (.mkApp2 (.symbolT "bvxor") (← applyTranslators! x) (← applyTranslators! y))
+  | .app (.const ``Int.ofNat []) (mkApp2 (.const ``BitVec.toNat []) w x)
+  | mkApp3 (.const ``Nat.cast [0]) (.const ``Int []) _ (mkApp2 (.const ``BitVec.toNat []) w x) =>
+    _ ← reduceWidth w e
+    return some (.appT (.symbolT "ubv_to_int") (← applyTranslators! x))
+  | mkApp2 (.const ``BitVec.toInt []) w x =>
+    _ ← reduceWidth w e
+    return some (.appT (.symbolT "sbv_to_int") (← applyTranslators! x))
+  | mkApp2 (.const ``BitVec.ofInt []) w x =>
+    let w ← reduceWidth w e
+    return some (.appT (.mkApp2 (.symbolT "_") (.symbolT "int_to_bv") (.literalT (toString w)))
+                       (← applyTranslators! x))
   | .app (.const ``BitVec.zero []) w => do
     let w ← reduceWidth w e
     return mkLit w 0
