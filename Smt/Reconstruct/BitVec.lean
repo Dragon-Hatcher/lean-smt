@@ -291,6 +291,18 @@ where
 
 def reconstructRewrite (pf : cvc5.Proof) : ReconstructM (Option Expr) := do
   match pf.getRewriteRule! with
+  | .BV_UGT_ELIMINATE =>
+    let ⟨w, x, y⟩ ← operands
+    addThm q(($x > $y) = ($y < $x)) q(@Rewrite.ugt_eliminate $w $x $y)
+  | .BV_UGE_ELIMINATE =>
+    let ⟨w, x, y⟩ ← operands
+    addThm q(($x ≥ $y) = ($y ≤ $x)) q(@Rewrite.uge_eliminate $w $x $y)
+  | .BV_ULE_ELIMINATE =>
+    let ⟨w, x, y⟩ ← operands
+    addThm q(($x ≤ $y) = ¬($y < $x)) q(@Rewrite.ule_eliminate $w $x $y)
+  | .BV_SLE_ELIMINATE =>
+    let ⟨w, x, y⟩ ← operands
+    addThm q((BitVec.sle $x $y = true) = ¬(BitVec.slt $y $x = true)) q(@Rewrite.sle_eliminate $w $x $y)
   | .BV_XOR_DUPLICATE =>
     let ⟨w, x⟩ ← operand
     addThm q($x ^^^ $x = BitVec.ofNat $w 0) q(@Rewrite.xor_duplicate $w $x)
@@ -310,6 +322,12 @@ where
     let w : Nat := pf.getArguments[1]!.getSort!.getBitVectorSize!.toNat
     let x : Q(BitVec $w) ← reconstructTerm pf.getArguments[1]!
     return ⟨w, x⟩
+  /-- The two bit-vector variables `x` and `y` of a rule, and their width. -/
+  operands : ReconstructM ((w : Nat) × Q(BitVec $w) × Q(BitVec $w)) := do
+    let w : Nat := pf.getArguments[1]!.getSort!.getBitVectorSize!.toNat
+    let x : Q(BitVec $w) ← reconstructTerm pf.getArguments[1]!
+    let y : Q(BitVec $w) ← reconstructTerm pf.getArguments[2]!
+    return ⟨w, x, y⟩
 
 @[smt_proof_reconstruct] def reconstructBitVecProof : ProofReconstructor := fun pf => do match pf.getRule with
   | .DSL_REWRITE => reconstructRewrite pf

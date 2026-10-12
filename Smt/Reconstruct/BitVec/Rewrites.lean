@@ -10,9 +10,19 @@ public section
 
 namespace Smt.Reconstruct.BitVec.Rewrite
 
+-- https://github.com/cvc5/cvc5/blob/main/src/theory/bv/rewrites-elimination
 -- https://github.com/cvc5/cvc5/blob/main/src/theory/bv/rewrites-simplification
 
-variable {w : Nat} {x : BitVec w}
+variable {w : Nat} {x y : BitVec w}
+
+theorem ugt_eliminate : (x > y) = (y < x) :=
+  rfl
+theorem uge_eliminate : (x ≥ y) = (y ≤ x) :=
+  rfl
+theorem ule_eliminate : (x ≤ y) = ¬(y < x) :=
+  propext BitVec.not_lt.symm
+theorem sle_eliminate : (x.sle y = true) = ¬(y.slt x = true) := by
+  simp [BitVec.sle, BitVec.slt, Int.not_lt]
 
 theorem xor_duplicate : x ^^^ x = BitVec.ofNat w 0 := by
   simp
